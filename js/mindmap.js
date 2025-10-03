@@ -1,21 +1,34 @@
 /**
- * Mind Map Module
- * Creates interactive mind map visualization using vis.js
+ * Modern Interactive Mind Map with D3.js Force Simulation
+ * Fully draggable, zoomable, and collapsible
  */
 
 class MindMap {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
-        this.network = null;
-        this.nodes = null;
-        this.edges = null;
-        this.expandedNodes = new Set(['root']); // Track which nodes are expanded
-        this.allItems = []; // Store all content items
+        this.svg = null;
+        this.g = null;
+        this.simulation = null;
+        this.nodes = [];
+        this.links = [];
+        this.expandedNodes = new Set(['root']);
+        this.allItems = [];
+        this.width = 0;
+        this.height = 0;
+        this.zoom = null;
+
+        // Color schemes for different parts
+        this.colorSchemes = {
+            'Part 1': { primary: '#3498db', gradient: ['#3498db', '#2980b9'] },
+            'Part 2': { primary: '#2ecc71', gradient: ['#2ecc71', '#27ae60'] },
+            'Part 3': { primary: '#e67e22', gradient: ['#e67e22', '#d35400'] },
+            'Part 4': { primary: '#9b59b6', gradient: ['#9b59b6', '#8e44ad'] },
+            'root': { primary: '#1a1f2e', gradient: ['#2c3e50', '#1a1f2e'] }
+        };
     }
 
     /**
-     * Initialize and render the mind map
-     * @param {Object} courseData - Course data object
+     * Initialize the mind map
      */
     async init(courseData) {
         if (!this.container) {
@@ -27,395 +40,529 @@ class MindMap {
             // Get flattened content
             this.allItems = courseData.getFlattenedContent();
 
-            // Create nodes and edges (initially showing only root + parts)
-            this.createNodesAndEdges();
+            // Set dimensions
+            this.updateDimensions();
 
-            // Configure network options
-            const options = this.getNetworkOptions();
+            // Create SVG
+            this.createSVG();
 
-            // Create network
-            this.network = new vis.Network(this.container, {
-                nodes: this.nodes,
-                edges: this.edges
-            }, options);
+            // Create gradient definitions
+            this.createGradients();
 
-            // Wait for stabilization before fitting
-            this.network.once('stabilizationIterationsDone', () => {
-                this.network.fit({ animation: { duration: 1000 } });
-            });
+            // Initialize data
+            this.updateGraphData();
 
-            // Fallback fit after timeout
-            setTimeout(() => {
-                this.network.fit({ animation: { duration: 1000 } });
-            }, 1000);
+            // Create force simulation
+            this.createSimulation();
 
-            // Add event listeners
-            this.attachEventListeners();
+            // Render
+            this.render();
 
-            console.log('✅ Mind map initialized successfully');
+            // Add window resize listener
+            window.addEventListener('resize', () => this.handleResize());
+
+            console.log('✅ Modern mind map initialized successfully');
         } catch (error) {
             console.error('❌ Error initializing mind map:', error);
         }
     }
 
     /**
-     * Create nodes and edges from content items
-     * Only shows nodes whose parents are expanded
+     * Update container dimensions
      */
-    createNodesAndEdges() {
-        const nodesArray = [];
-        const edgesArray = [];
+    updateDimensions() {
+        const rect = this.container.getBoundingClientRect();
+        this.width = rect.width;
+        this.height = rect.height;
+    }
 
-        // Get visible items (root + children of expanded nodes)
+    /**
+     * Create SVG element
+     */
+    createSVG() {
+        // Clear existing SVG
+        this.container.innerHTML = '';
+
+        // Create SVG
+        this.svg = d3.select(this.container)
+            .append('svg')
+            .attr('width', '100%')
+            .attr('height', '100%')
+            .attr('viewBox', [0, 0, this.width, this.height])
+            .style('background', 'radial-gradient(circle at center, #1a1f2e 0%, #0f1419 100%)');
+
+        // Add zoom behavior
+        this.zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on('zoom', (event) => {
+                this.g.attr('transform', event.transform);
+            });
+
+        this.svg.call(this.zoom);
+
+        // Create main group
+        this.g = this.svg.append('g');
+
+        // Add glow filter
+        const defs = this.svg.append('defs');
+        const filter = defs.append('filter')
+            .attr('id', 'glow')
+            .attr('x', '-50%')
+            .attr('y', '-50%')
+            .attr('width', '200%')
+            .attr('height', '200%');
+
+        filter.append('feGaussianBlur')
+            .attr('stdDeviation', '4')
+            .attr('result', 'coloredBlur');
+
+        const feMerge = filter.append('feMerge');
+        feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+        feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+    }
+
+    /**
+     * Create gradient definitions
+     */
+    createGradients() {
+        const defs = this.svg.select('defs');
+
+        Object.entries(this.colorSchemes).forEach(([key, scheme]) => {
+            const gradient = defs.append('radialGradient')
+                .attr('id', `gradient-${key.replace(/\s+/g, '-')}`)
+                .attr('cx', '30%')
+                .attr('cy', '30%');
+
+            gradient.append('stop')
+                .attr('offset', '0%')
+                .attr('stop-color', scheme.gradient[0])
+                .attr('stop-opacity', 1);
+
+            gradient.append('stop')
+                .attr('offset', '100%')
+                .attr('stop-color', scheme.gradient[1])
+                .attr('stop-opacity', 0.8);
+        });
+    }
+
+    /**
+     * Update graph data based on expanded nodes
+     */
+    updateGraphData() {
+        // Filter visible items
         const visibleItems = this.allItems.filter(item => {
             if (item.id === 'root') return true;
             return this.expandedNodes.has(item.parent);
         });
 
-        visibleItems.forEach(item => {
-            // Check if this node has children
+        // Create nodes with enhanced data
+        this.nodes = visibleItems.map(item => {
             const hasChildren = this.allItems.some(child => child.parent === item.id);
             const isExpanded = this.expandedNodes.has(item.id);
 
-            // Add expand/collapse indicator to label
-            let label = item.label;
-            if (hasChildren) {
-                label = isExpanded ? `▼ ${label}` : `▶ ${label}`;
-            }
-
-            // Create node
-            const node = {
+            return {
                 id: item.id,
-                label: label,
+                label: item.label,
+                type: item.type,
                 level: item.level,
-                color: this.getNodeColor(item),
-                font: this.getNodeFont(item),
-                shape: this.getNodeShape(item),
-                size: this.getNodeSize(item),
-                data: item // Store original item data
+                color: item.color,
+                parent: item.parent,
+                hasChildren,
+                isExpanded,
+                data: item,
+                radius: this.getNodeRadius(item),
+                // Initialize position if new node
+                x: item.x || this.width / 2,
+                y: item.y || this.height / 2
             };
-
-            nodesArray.push(node);
-
-            // Create edge to parent
-            if (item.parent && visibleItems.some(v => v.id === item.parent)) {
-                const edge = {
-                    from: item.parent,
-                    to: item.id,
-                    color: {
-                        color: item.color || '#3c4251',
-                        opacity: 0.6
-                    },
-                    width: this.getEdgeWidth(item.level),
-                    smooth: {
-                        type: 'cubicBezier',
-                        roundness: 0.5
-                    }
-                };
-
-                edgesArray.push(edge);
-            }
         });
 
-        if (this.nodes) {
-            this.nodes.clear();
-            this.nodes.add(nodesArray);
-            this.edges.clear();
-            this.edges.add(edgesArray);
-        } else {
-            this.nodes = new vis.DataSet(nodesArray);
-            this.edges = new vis.DataSet(edgesArray);
+        // Create links
+        this.links = this.nodes
+            .filter(node => node.parent)
+            .map(node => ({
+                source: node.parent,
+                target: node.id,
+                strength: this.getLinkStrength(node.level)
+            }));
+    }
+
+    /**
+     * Get node radius based on type and level
+     */
+    getNodeRadius(item) {
+        const radiusMap = {
+            'root': 60,
+            'part': 45,
+            'chapter': 35,
+            'takeaway': 25
+        };
+        return radiusMap[item.type] || 25;
+    }
+
+    /**
+     * Get link strength based on level
+     */
+    getLinkStrength(level) {
+        return 1 / (level + 1);
+    }
+
+    /**
+     * Create force simulation
+     */
+    createSimulation() {
+        this.simulation = d3.forceSimulation(this.nodes)
+            .force('link', d3.forceLink(this.links)
+                .id(d => d.id)
+                .distance(d => {
+                    const sourceNode = this.nodes.find(n => n.id === d.source.id);
+                    const targetNode = this.nodes.find(n => n.id === d.target.id);
+                    return (sourceNode?.radius || 30) + (targetNode?.radius || 30) + 100;
+                })
+                .strength(d => d.strength))
+            .force('charge', d3.forceManyBody()
+                .strength(d => d.type === 'root' ? -3000 : -800)
+                .distanceMax(400))
+            .force('center', d3.forceCenter(this.width / 2, this.height / 2))
+            .force('collision', d3.forceCollide()
+                .radius(d => d.radius + 20)
+                .strength(0.7))
+            .force('x', d3.forceX(this.width / 2).strength(0.05))
+            .force('y', d3.forceY(this.height / 2).strength(0.05))
+            .alphaDecay(0.02)
+            .velocityDecay(0.4);
+    }
+
+    /**
+     * Render the graph
+     */
+    render() {
+        // Render links
+        const linkGroup = this.g.selectAll('.link-group').data([0]);
+        const linkGroupEnter = linkGroup.enter().append('g').attr('class', 'link-group');
+        const linkGroupMerge = linkGroupEnter.merge(linkGroup);
+
+        const link = linkGroupMerge.selectAll('.link')
+            .data(this.links, d => `${d.source.id || d.source}-${d.target.id || d.target}`);
+
+        link.exit()
+            .transition()
+            .duration(300)
+            .style('opacity', 0)
+            .remove();
+
+        const linkEnter = link.enter()
+            .append('line')
+            .attr('class', 'link')
+            .style('stroke', d => {
+                const targetNode = this.nodes.find(n => n.id === (d.target.id || d.target));
+                return targetNode?.color || '#3498db';
+            })
+            .style('stroke-width', d => {
+                const targetNode = this.nodes.find(n => n.id === (d.target.id || d.target));
+                return targetNode?.level === 1 ? 4 : targetNode?.level === 2 ? 3 : 2;
+            })
+            .style('stroke-opacity', 0.4)
+            .style('opacity', 0);
+
+        linkEnter.transition()
+            .duration(500)
+            .style('opacity', 1);
+
+        const linkMerge = linkEnter.merge(link);
+
+        // Render nodes
+        const nodeGroup = this.g.selectAll('.node-group').data([0]);
+        const nodeGroupEnter = nodeGroup.enter().append('g').attr('class', 'node-group');
+        const nodeGroupMerge = nodeGroupEnter.merge(nodeGroup);
+
+        const node = nodeGroupMerge.selectAll('.node')
+            .data(this.nodes, d => d.id);
+
+        node.exit()
+            .transition()
+            .duration(300)
+            .attr('r', 0)
+            .style('opacity', 0)
+            .remove();
+
+        const nodeEnter = node.enter()
+            .append('g')
+            .attr('class', 'node')
+            .style('cursor', 'pointer')
+            .call(this.createDragBehavior());
+
+        // Add circles with gradients
+        nodeEnter.append('circle')
+            .attr('class', 'node-circle')
+            .attr('r', 0)
+            .style('fill', d => {
+                const partLabel = this.getPartLabel(d);
+                return `url(#gradient-${partLabel.replace(/\s+/g, '-')})`;
+            })
+            .style('stroke', d => d.color || '#3498db')
+            .style('stroke-width', d => d.type === 'root' ? 4 : 2)
+            .style('filter', 'url(#glow)')
+            .transition()
+            .duration(500)
+            .attr('r', d => d.radius);
+
+        // Add labels
+        nodeEnter.append('text')
+            .attr('class', 'node-label')
+            .attr('text-anchor', 'middle')
+            .attr('dy', d => d.radius > 40 ? 5 : 4)
+            .style('fill', '#ffffff')
+            .style('font-size', d => {
+                if (d.type === 'root') return '18px';
+                if (d.type === 'part') return '14px';
+                if (d.type === 'chapter') return '12px';
+                return '10px';
+            })
+            .style('font-weight', d => d.type === 'root' || d.type === 'part' ? 'bold' : '600')
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
+            .text(d => this.truncateLabel(d.label, d.radius))
+            .style('opacity', 0)
+            .transition()
+            .duration(500)
+            .style('opacity', 1);
+
+        // Add expand/collapse indicator
+        nodeEnter.filter(d => d.hasChildren)
+            .append('text')
+            .attr('class', 'node-indicator')
+            .attr('text-anchor', 'middle')
+            .attr('dy', d => d.radius + 15)
+            .style('fill', '#ffffff')
+            .style('font-size', '16px')
+            .style('pointer-events', 'none')
+            .style('user-select', 'none')
+            .text(d => d.isExpanded ? '▼' : '▶')
+            .style('opacity', 0)
+            .transition()
+            .duration(500)
+            .style('opacity', 0.8);
+
+        const nodeMerge = nodeEnter.merge(node);
+
+        // Update existing nodes
+        nodeMerge.select('.node-circle')
+            .transition()
+            .duration(300)
+            .attr('r', d => d.radius);
+
+        nodeMerge.select('.node-label')
+            .text(d => this.truncateLabel(d.label, d.radius));
+
+        nodeMerge.select('.node-indicator')
+            .text(d => d.isExpanded ? '▼' : '▶');
+
+        // Add interactions
+        nodeMerge
+            .on('click', (event, d) => this.handleNodeClick(event, d))
+            .on('mouseover', (event, d) => this.handleNodeHover(event, d, true))
+            .on('mouseout', (event, d) => this.handleNodeHover(event, d, false));
+
+        // Update simulation
+        this.simulation.nodes(this.nodes);
+        this.simulation.force('link').links(this.links);
+
+        // Tick function
+        this.simulation.on('tick', () => {
+            linkMerge
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            nodeMerge
+                .attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        // Restart simulation
+        this.simulation.alpha(0.3).restart();
+    }
+
+    /**
+     * Get part label for a node
+     */
+    getPartLabel(node) {
+        if (node.type === 'root') return 'root';
+
+        // Find the part this node belongs to
+        let current = node;
+        while (current && current.type !== 'part') {
+            current = this.nodes.find(n => n.id === current.parent);
         }
+
+        return current ? current.label : 'root';
     }
 
     /**
-     * Get node color based on item type
-     * @param {Object} item - Content item
-     * @returns {Object} Color configuration
+     * Truncate label to fit in circle
      */
-    getNodeColor(item) {
-        const baseColor = item.color || '#3498db';
+    truncateLabel(label, radius) {
+        const maxChars = Math.floor(radius / 4);
+        if (label.length <= maxChars) return label;
 
-        const colorConfig = {
-            root: {
-                background: '#1a1f2e',
-                border: baseColor,
-                highlight: {
-                    background: '#242936',
-                    border: baseColor
-                }
-            },
-            part: {
-                background: baseColor,
-                border: this.lightenColor(baseColor, 20),
-                highlight: {
-                    background: this.lightenColor(baseColor, 10),
-                    border: this.lightenColor(baseColor, 30)
-                }
-            },
-            chapter: {
-                background: this.adjustAlpha(baseColor, 0.8),
-                border: baseColor,
-                highlight: {
-                    background: baseColor,
-                    border: this.lightenColor(baseColor, 20)
-                }
-            },
-            takeaway: {
-                background: this.adjustAlpha(baseColor, 0.3),
-                border: this.adjustAlpha(baseColor, 0.6),
-                highlight: {
-                    background: this.adjustAlpha(baseColor, 0.5),
-                    border: baseColor
-                }
+        // Split into words and try to fit
+        const words = label.split(' ');
+        if (words.length === 1) {
+            return label.substring(0, maxChars - 2) + '..';
+        }
+
+        // Return first few words or abbreviation
+        let result = '';
+        for (const word of words) {
+            if ((result + word).length <= maxChars) {
+                result += (result ? ' ' : '') + word;
+            } else {
+                break;
             }
-        };
+        }
 
-        return colorConfig[item.type] || colorConfig.takeaway;
+        return result || words[0].substring(0, maxChars - 2) + '..';
     }
 
     /**
-     * Get node font configuration
-     * @param {Object} item - Content item
-     * @returns {Object} Font configuration
+     * Create drag behavior
      */
-    getNodeFont(item) {
-        const fontSizes = {
-            root: 32,
-            part: 24,
-            chapter: 18,
-            takeaway: 14
-        };
-
-        const fontWeights = {
-            root: 'bold',
-            part: 'bold',
-            chapter: '600',
-            takeaway: 'normal'
-        };
-
-        return {
-            size: fontSizes[item.type] || 14,
-            color: item.type === 'root' || item.type === 'part' ? '#ffffff' : '#e8eaed',
-            face: 'Inter, sans-serif',
-            bold: fontWeights[item.type]
-        };
+    createDragBehavior() {
+        return d3.drag()
+            .on('start', (event, d) => {
+                if (!event.active) this.simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            })
+            .on('drag', (event, d) => {
+                d.fx = event.x;
+                d.fy = event.y;
+            })
+            .on('end', (event, d) => {
+                if (!event.active) this.simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            });
     }
 
     /**
-     * Get node shape based on item type
-     * @param {Object} item - Content item
-     * @returns {string} Shape type
+     * Handle node click
      */
-    getNodeShape(item) {
-        const shapes = {
-            root: 'box',
-            part: 'box',
-            chapter: 'ellipse',
-            takeaway: 'ellipse'
-        };
+    handleNodeClick(event, node) {
+        event.stopPropagation();
 
-        return shapes[item.type] || 'ellipse';
-    }
-
-    /**
-     * Get node size based on item type
-     * @param {Object} item - Content item
-     * @returns {number} Node size
-     */
-    getNodeSize(item) {
-        const sizes = {
-            root: 50,
-            part: 40,
-            chapter: 30,
-            takeaway: 20
-        };
-
-        return sizes[item.type] || 20;
-    }
-
-    /**
-     * Get edge width based on level
-     * @param {number} level - Hierarchy level
-     * @returns {number} Edge width
-     */
-    getEdgeWidth(level) {
-        const widths = {
-            1: 4,
-            2: 3,
-            3: 2
-        };
-
-        return widths[level] || 1;
-    }
-
-    /**
-     * Get network configuration options
-     * @returns {Object} vis.js options
-     */
-    getNetworkOptions() {
-        return {
-            layout: {
-                hierarchical: {
-                    enabled: true,
-                    direction: 'UD',
-                    sortMethod: 'directed',
-                    levelSeparation: 200,
-                    nodeSpacing: 200,
-                    treeSpacing: 300,
-                    blockShifting: true,
-                    edgeMinimization: true,
-                    parentCentralization: true
-                }
-            },
-            physics: {
-                enabled: true,
-                hierarchicalRepulsion: {
-                    centralGravity: 0.0,
-                    springLength: 100,
-                    springConstant: 0.01,
-                    nodeDistance: 120,
-                    damping: 0.09
-                },
-                solver: 'hierarchicalRepulsion',
-                stabilization: {
-                    enabled: true,
-                    iterations: 1000
-                }
-            },
-            interaction: {
-                hover: true,
-                tooltipDelay: 200,
-                zoomView: true,
-                dragView: true,
-                navigationButtons: false,
-                keyboard: {
-                    enabled: true,
-                    bindToWindow: false
-                }
-            },
-            nodes: {
-                borderWidth: 2,
-                borderWidthSelected: 4,
-                margin: 10,
-                shadow: {
-                    enabled: true,
-                    color: 'rgba(0, 0, 0, 0.5)',
-                    size: 10,
-                    x: 0,
-                    y: 3
-                }
-            },
-            edges: {
-                arrows: {
-                    to: {
-                        enabled: false
-                    }
-                },
-                shadow: {
-                    enabled: true,
-                    color: 'rgba(0, 0, 0, 0.3)',
-                    size: 5,
-                    x: 0,
-                    y: 2
-                }
-            }
-        };
-    }
-
-    /**
-     * Attach event listeners to network
-     */
-    attachEventListeners() {
-        // Click event
-        this.network.on('click', (params) => {
-            if (params.nodes.length > 0) {
-                const nodeId = params.nodes[0];
-                const node = this.nodes.get(nodeId);
-                this.onNodeClick(node);
-            }
-        });
-
-        // Double click to focus
-        this.network.on('doubleClick', (params) => {
-            if (params.nodes.length > 0) {
-                const nodeId = params.nodes[0];
-                this.network.focus(nodeId, {
-                    scale: 1.5,
-                    animation: {
-                        duration: 1000,
-                        easingFunction: 'easeInOutQuad'
-                    }
-                });
-            }
-        });
-
-        // Hover effects
-        this.network.on('hoverNode', () => {
-            this.container.style.cursor = 'pointer';
-        });
-
-        this.network.on('blurNode', () => {
-            this.container.style.cursor = 'default';
-        });
-    }
-
-    /**
-     * Handle node click event
-     * @param {Object} node - Clicked node
-     */
-    onNodeClick(node) {
         console.log('Node clicked:', node);
 
-        // Check if this node has children
-        const hasChildren = this.allItems.some(item => item.parent === node.id);
-
-        if (hasChildren) {
-            // Toggle expansion
-            if (this.expandedNodes.has(node.id)) {
+        if (node.hasChildren) {
+            if (node.isExpanded) {
                 this.collapseNode(node.id);
             } else {
                 this.expandNode(node.id);
             }
         }
 
-        // Dispatch custom event for other modules to handle
-        const event = new CustomEvent('mindmap:nodeClick', {
-            detail: { node }
+        // Dispatch event
+        const customEvent = new CustomEvent('mindmap:nodeClick', {
+            detail: { node: node.data }
         });
-        document.dispatchEvent(event);
+        document.dispatchEvent(customEvent);
 
-        // If it's a chapter node, load its content
+        // Load content if chapter
         if (node.data && node.data.chapter) {
             this.loadChapterContent(node.data);
         }
     }
 
     /**
-     * Expand a node to show its children
-     * @param {string} nodeId - Node ID to expand
+     * Handle node hover
      */
-    expandNode(nodeId) {
-        this.expandedNodes.add(nodeId);
-        this.createNodesAndEdges();
+    handleNodeHover(event, node, isHover) {
+        const circle = d3.select(event.currentTarget).select('.node-circle');
 
-        // Smooth animation after expansion
-        setTimeout(() => {
-            this.network.fit({
-                animation: {
-                    duration: 500,
-                    easingFunction: 'easeInOutQuad'
-                }
-            });
-        }, 100);
+        if (isHover) {
+            circle
+                .transition()
+                .duration(200)
+                .attr('r', node.radius * 1.15)
+                .style('stroke-width', 4);
+
+            // Show tooltip
+            this.showTooltip(event, node);
+        } else {
+            circle
+                .transition()
+                .duration(200)
+                .attr('r', node.radius)
+                .style('stroke-width', node.type === 'root' ? 4 : 2);
+
+            this.hideTooltip();
+        }
     }
 
     /**
-     * Collapse a node to hide its children
-     * @param {string} nodeId - Node ID to collapse
+     * Show tooltip
+     */
+    showTooltip(event, node) {
+        // Remove existing tooltip
+        this.hideTooltip();
+
+        const tooltip = d3.select('body')
+            .append('div')
+            .attr('class', 'mindmap-tooltip')
+            .style('position', 'absolute')
+            .style('background', 'rgba(0, 0, 0, 0.9)')
+            .style('color', '#fff')
+            .style('padding', '12px 16px')
+            .style('border-radius', '8px')
+            .style('font-size', '14px')
+            .style('pointer-events', 'none')
+            .style('z-index', '10000')
+            .style('box-shadow', '0 4px 12px rgba(0,0,0,0.3)')
+            .style('max-width', '300px')
+            .style('opacity', 0);
+
+        let content = `<strong>${node.label}</strong>`;
+        if (node.hasChildren) {
+            const childCount = this.allItems.filter(item => item.parent === node.id).length;
+            content += `<br><small>${childCount} item${childCount > 1 ? 's' : ''} inside</small>`;
+        }
+        if (node.data.description) {
+            content += `<br><small style="opacity: 0.8">${node.data.description}</small>`;
+        }
+
+        tooltip.html(content);
+
+        // Position tooltip
+        const [x, y] = d3.pointer(event, document.body);
+        tooltip
+            .style('left', (x + 15) + 'px')
+            .style('top', (y - 15) + 'px')
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+    }
+
+    /**
+     * Hide tooltip
+     */
+    hideTooltip() {
+        d3.selectAll('.mindmap-tooltip').remove();
+    }
+
+    /**
+     * Expand node
+     */
+    expandNode(nodeId) {
+        this.expandedNodes.add(nodeId);
+        this.updateGraphData();
+        this.render();
+    }
+
+    /**
+     * Collapse node
      */
     collapseNode(nodeId) {
-        // Remove this node and all its descendants from expanded set
         const removeDescendants = (id) => {
             this.expandedNodes.delete(id);
             const children = this.allItems.filter(item => item.parent === id);
@@ -423,22 +570,12 @@ class MindMap {
         };
 
         removeDescendants(nodeId);
-        this.createNodesAndEdges();
-
-        // Smooth animation after collapse
-        setTimeout(() => {
-            this.network.fit({
-                animation: {
-                    duration: 500,
-                    easingFunction: 'easeInOutQuad'
-                }
-            });
-        }, 100);
+        this.updateGraphData();
+        this.render();
     }
 
     /**
-     * Load chapter content in content panel
-     * @param {Object} chapter - Chapter data
+     * Load chapter content
      */
     loadChapterContent(chapter) {
         const event = new CustomEvent('content:loadChapter', {
@@ -451,82 +588,65 @@ class MindMap {
      * Zoom controls
      */
     zoomIn() {
-        const scale = this.network.getScale();
-        this.network.moveTo({
-            scale: scale * 1.2,
-            animation: { duration: 300 }
-        });
+        this.svg.transition()
+            .duration(300)
+            .call(this.zoom.scaleBy, 1.3);
     }
 
     zoomOut() {
-        const scale = this.network.getScale();
-        this.network.moveTo({
-            scale: scale * 0.8,
-            animation: { duration: 300 }
-        });
+        this.svg.transition()
+            .duration(300)
+            .call(this.zoom.scaleBy, 0.7);
     }
 
     resetZoom() {
-        this.network.fit({
-            animation: {
-                duration: 500,
-                easingFunction: 'easeInOutQuad'
-            }
-        });
+        this.svg.transition()
+            .duration(500)
+            .call(this.zoom.transform, d3.zoomIdentity);
     }
 
     /**
-     * Export mind map as image
+     * Export as image
      */
     async exportAsImage() {
         try {
-            const canvas = this.container.querySelector('canvas');
-            if (!canvas) {
-                console.error('Canvas not found');
-                return;
-            }
+            const svgElement = this.svg.node();
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgElement);
 
-            // Convert canvas to blob
-            canvas.toBlob((blob) => {
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'organizational-behavior-mindmap.png';
-                link.click();
-                URL.revokeObjectURL(url);
-            });
+            const canvas = document.createElement('canvas');
+            canvas.width = this.width;
+            canvas.height = this.height;
+
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'organizational-behavior-mindmap.png';
+                    link.click();
+                    URL.revokeObjectURL(url);
+                });
+            };
+
+            img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
         } catch (error) {
             console.error('Error exporting mind map:', error);
         }
     }
 
     /**
-     * Utility: Lighten color
-     * @param {string} color - Hex color
-     * @param {number} percent - Lighten percentage
-     * @returns {string} Lightened color
+     * Handle window resize
      */
-    lightenColor(color, percent) {
-        const num = parseInt(color.replace('#', ''), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = Math.min(255, (num >> 16) + amt);
-        const G = Math.min(255, (num >> 8 & 0x00FF) + amt);
-        const B = Math.min(255, (num & 0x0000FF) + amt);
-        return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
-    }
-
-    /**
-     * Utility: Adjust color alpha
-     * @param {string} color - Hex color
-     * @param {number} alpha - Alpha value (0-1)
-     * @returns {string} RGBA color
-     */
-    adjustAlpha(color, alpha) {
-        const num = parseInt(color.replace('#', ''), 16);
-        const R = (num >> 16);
-        const G = (num >> 8 & 0x00FF);
-        const B = (num & 0x0000FF);
-        return `rgba(${R}, ${G}, ${B}, ${alpha})`;
+    handleResize() {
+        this.updateDimensions();
+        this.svg.attr('viewBox', [0, 0, this.width, this.height]);
+        this.simulation.force('center', d3.forceCenter(this.width / 2, this.height / 2));
+        this.simulation.alpha(0.3).restart();
     }
 }
 
