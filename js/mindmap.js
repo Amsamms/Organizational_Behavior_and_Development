@@ -77,6 +77,23 @@ class MindMap {
 
         // Main group
         this.g = this.svg.append('g');
+
+        // Create tooltip
+        this.tooltip = d3.select(this.container)
+            .append('div')
+            .attr('class', 'mindmap-tooltip')
+            .style('position', 'absolute')
+            .style('visibility', 'hidden')
+            .style('background', 'rgba(26, 31, 46, 0.98)')
+            .style('border', '1px solid rgba(255, 255, 255, 0.2)')
+            .style('border-radius', '8px')
+            .style('padding', '12px 16px')
+            .style('color', '#ffffff')
+            .style('font-size', '14px')
+            .style('max-width', '350px')
+            .style('box-shadow', '0 10px 30px rgba(0,0,0,0.5)')
+            .style('z-index', '10000')
+            .style('pointer-events', 'none');
     }
 
     render() {
@@ -190,7 +207,9 @@ class MindMap {
             .append('g')
             .attr('class', 'node')
             .style('cursor', 'pointer')
-            .on('click', (event, d) => this.handleNodeClick(event, d));
+            .on('click', (event, d) => this.handleNodeClick(event, d))
+            .on('mouseenter', (event, d) => this.showTooltip(event, d))
+            .on('mouseleave', () => this.hideTooltip());
 
         // Node background
         nodeEnter.append('rect')
@@ -421,6 +440,42 @@ class MindMap {
         } catch (error) {
             console.error('Export error:', error);
         }
+    }
+
+    showTooltip(event, node) {
+        let html = `<div style="font-weight: 600; margin-bottom: 8px; font-size: 15px;">${node.label}</div>`;
+
+        // Add key takeaways if available
+        if (node.keyTakeaways && node.keyTakeaways.length > 0) {
+            html += `<div style="font-size: 13px; color: #a8b2d1; margin-top: 8px;">`;
+            html += `<div style="font-weight: 600; margin-bottom: 4px;">Key Points:</div>`;
+            html += `<ul style="margin: 0; padding-left: 20px;">`;
+            node.keyTakeaways.slice(0, 3).forEach(takeaway => {
+                const shortTakeaway = takeaway.length > 80 ? takeaway.substring(0, 80) + '...' : takeaway;
+                html += `<li style="margin-bottom: 4px;">${shortTakeaway}</li>`;
+            });
+            html += `</ul>`;
+            if (node.keyTakeaways.length > 3) {
+                html += `<div style="font-style: italic; margin-top: 4px;">+${node.keyTakeaways.length - 3} more...</div>`;
+            }
+            html += `</div>`;
+        }
+
+        // Add overview if available
+        if (node.overview) {
+            const shortOverview = node.overview.length > 150 ? node.overview.substring(0, 150) + '...' : node.overview;
+            html += `<div style="font-size: 12px; color: #a8b2d1; margin-top: 8px; font-style: italic;">${shortOverview}</div>`;
+        }
+
+        this.tooltip
+            .html(html)
+            .style('visibility', 'visible')
+            .style('left', (event.pageX + 15) + 'px')
+            .style('top', (event.pageY - 10) + 'px');
+    }
+
+    hideTooltip() {
+        this.tooltip.style('visibility', 'hidden');
     }
 
     handleResize() {
