@@ -1,0 +1,489 @@
+/* ===================================
+   Responsive Design Styles
+   =================================== */
+
+/* Large Tablets and Small Desktops (1024px and below) */
+@media screen and (max-width: 1024px) {
+    .header-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-container {
+        max-width: 100%;
+        order: 3;
+    }
+
+    .view-toggle {
+        order: 2;
+        justify-content: center;
+    }
+
+    .logo-section {
+        order: 1;
+        justify-content: center;
+    }
+
+    .main-content.split-view {
+        grid-template-columns: 1fr;
+    }
+
+    .mindmap-panel {
+        min-height: 500px;
+    }
+
+    .welcome-screen h1 {
+        font-size: 2rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+    }
+}
+
+/* Tablets (768px and below) */
+@media screen and (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    .main-header {
+        padding: var(--spacing-md);
+    }
+
+    .title-section h1 {
+        font-size: 1.2rem;
+    }
+
+    .subtitle {
+        font-size: 0.75rem;
+    }
+
+    .logo-section i {
+        font-size: 2rem;
+    }
+
+    .panel-header {
+        padding: var(--spacing-md);
+    }
+
+    .panel-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .map-controls,
+    .content-controls {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .control-btn {
+        padding: var(--spacing-sm);
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .main-content {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+
+    .main-content.content-view {
+        grid-template-columns: 1fr;
+    }
+
+    .navigation-panel {
+        max-height: 400px;
+    }
+
+    .mindmap-panel {
+        min-height: 400px;
+    }
+
+    .content-area {
+        padding: var(--spacing-lg);
+    }
+
+    .welcome-screen {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+
+    .welcome-screen h1 {
+        font-size: 1.5rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1rem;
+    }
+
+    .welcome-text {
+        font-size: 0.95rem;
+    }
+
+    .welcome-icon {
+        font-size: 3.5rem;
+    }
+
+    .course-stats {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .stat-card {
+        padding: var(--spacing-lg);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+    }
+
+    .quick-start {
+        padding: var(--spacing-lg);
+    }
+
+    .quick-start h3 {
+        font-size: 1.2rem;
+    }
+
+    .quick-start-list li {
+        font-size: 0.9rem;
+    }
+
+    .map-legend {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+
+    .search-results-overlay {
+        padding: var(--spacing-sm);
+    }
+
+    .search-results-container {
+        max-height: 90vh;
+    }
+
+    .bookmarks-sidebar {
+        width: 100%;
+        right: -100%;
+    }
+}
+
+/* Mobile Phones (480px and below) */
+@media screen and (max-width: 480px) {
+    html {
+        font-size: 13px;
+    }
+
+    .main-header {
+        padding: var(--spacing-sm);
+    }
+
+    .title-section h1 {
+        font-size: 1rem;
+    }
+
+    .subtitle {
+        font-size: 0.7rem;
+    }
+
+    .logo-section {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-sm);
+    }
+
+    .logo-section i {
+        font-size: 1.5rem;
+    }
+
+    .search-container {
+        min-width: 100%;
+    }
+
+    #searchInput {
+        font-size: 0.9rem;
+        padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) 2rem;
+    }
+
+    .search-container i {
+        left: var(--spacing-sm);
+    }
+
+    .view-toggle {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .view-btn {
+        flex: 1;
+        padding: var(--spacing-sm);
+        font-size: 0.95rem;
+    }
+
+    .panel-header {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+
+    .panel-header h2 {
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .map-controls,
+    .content-controls {
+        width: 100%;
+    }
+
+    .control-btn {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+
+    .main-content {
+        padding: var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+
+    .mindmap-panel {
+        min-height: 300px;
+    }
+
+    .navigation-panel {
+        max-height: 300px;
+    }
+
+    .content-area {
+        padding: var(--spacing-md);
+    }
+
+    .welcome-screen {
+        padding: var(--spacing-md) var(--spacing-sm);
+    }
+
+    .welcome-screen h1 {
+        font-size: 1.3rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .welcome-text {
+        font-size: 0.85rem;
+    }
+
+    .welcome-icon {
+        font-size: 2.5rem;
+    }
+
+    .stat-card {
+        padding: var(--spacing-md);
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .quick-start {
+        padding: var(--spacing-md);
+    }
+
+    .quick-start h3 {
+        font-size: 1.1rem;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .quick-start-list {
+        gap: var(--spacing-sm);
+    }
+
+    .quick-start-list li {
+        font-size: 0.85rem;
+        gap: var(--spacing-sm);
+    }
+
+    .quick-start-list i {
+        font-size: 1rem;
+        min-width: 20px;
+    }
+
+    .nav-part-header {
+        padding: var(--spacing-sm);
+        font-size: 0.9rem;
+    }
+
+    .nav-chapter-header {
+        padding: var(--spacing-sm);
+        font-size: 0.85rem;
+    }
+
+    .nav-section {
+        padding: 6px var(--spacing-sm);
+        font-size: 0.8rem;
+    }
+
+    .search-results-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .search-result-item {
+        padding: var(--spacing-md);
+        font-size: 0.85rem;
+    }
+
+    .sidebar-header {
+        padding: var(--spacing-md);
+    }
+
+    .sidebar-header h3 {
+        font-size: 1rem;
+    }
+
+    .bookmarks-list {
+        padding: var(--spacing-md);
+    }
+
+    .main-footer {
+        padding: var(--spacing-md);
+    }
+
+    .footer-content p {
+        font-size: 0.8rem;
+    }
+}
+
+/* Very Small Mobile Devices (360px and below) */
+@media screen and (max-width: 360px) {
+    html {
+        font-size: 12px;
+    }
+
+    .title-section h1 {
+        font-size: 0.9rem;
+    }
+
+    .subtitle {
+        font-size: 0.65rem;
+    }
+
+    .mindmap-panel {
+        min-height: 250px;
+    }
+
+    .welcome-screen h1 {
+        font-size: 1.1rem;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+}
+
+/* Landscape Orientation Adjustments */
+@media screen and (max-height: 600px) and (orientation: landscape) {
+    .main-header {
+        position: relative;
+        padding: var(--spacing-sm);
+    }
+
+    .mindmap-panel {
+        min-height: 400px;
+    }
+
+    .navigation-panel {
+        max-height: 350px;
+    }
+
+    .welcome-icon {
+        font-size: 2rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .welcome-screen h1 {
+        font-size: 1.3rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .welcome-text {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .course-stats {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .stat-card {
+        padding: var(--spacing-md);
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .quick-start {
+        padding: var(--spacing-md);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .main-header,
+    .view-toggle,
+    .map-controls,
+    .content-controls,
+    .main-footer,
+    .search-results-overlay,
+    .bookmarks-sidebar {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    .panel {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+    }
+
+    .content-area {
+        overflow: visible;
+    }
+
+    @page {
+        margin: 2cm;
+    }
+}
+
+/* High DPI / Retina Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Reduced Motion for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark Mode Support (already dark by default) */
+@media (prefers-color-scheme: light) {
+    /* Optional: Add light mode styles if needed in future */
+}

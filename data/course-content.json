@@ -1,0 +1,310 @@
+{
+  "courseTitle": "Organizational Behavior and Development",
+  "courseLevel": "EMBA",
+  "university": "Alexandria University",
+  "instructor": "Dr. Ghada Adel Atteya",
+  "date": "October 2025",
+  "parts": [
+    {
+      "part": 1,
+      "title": "The Field of Organizational Behavior",
+      "color": "#3498db",
+      "chapters": []
+    },
+    {
+      "part": 2,
+      "title": "Understanding and Managing Individual Behavior",
+      "color": "#2ecc71",
+      "chapters": [
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "part": 3,
+      "title": "Group Behavior and Interpersonal Influence",
+      "color": "#e67e22",
+      "chapters": [
+        7,
+        9,
+        10
+      ]
+    },
+    {
+      "part": 4,
+      "title": "Organizational Processes",
+      "color": "#9b59b6",
+      "chapters": [
+        11,
+        12,
+        13
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "chapter": 10,
+      "title": "Groups and Teams",
+      "overview": "This chapter examines the differences between groups and teams, their formation, development, and effectiveness in organizational settings. While groups and teams share many common characteristics, teams are mature groups with member interdependence and motivation to achieve common goals. The chapter explores various types of groups and teams, their development stages, and factors that contribute to team effectiveness.",
+      "keyTakeaways": [
+        "Groups and teams are not the same - teams are mature groups with member interdependence and total commitment to common goals",
+        "Teams start as groups, but not all groups mature into teams",
+        "Both teams and groups share common characteristics including structure, roles, and shared goals",
+        "Groups can be formal (command, task, team) or informal (interest, friendship)",
+        "People form groups based on social needs, security needs, esteem needs, proximity, attraction, group goals, and economic benefits",
+        "Groups develop through five stages: forming, storming, norming, performing, and adjourning",
+        "Homogeneous groups are more cohesive, but heterogeneous groups can outperform them due to diverse knowledge and experience",
+        "Group roles include expected, perceived, and enacted roles",
+        "Norms are standards shared by group members that regulate behavior",
+        "Group cohesiveness increases conformity to norms, which may not align with organizational goals",
+        "Groupthink is the deterioration of mental efficiency and judgment in the interest of group solidarity",
+        "Teams offer economic improvements, quality and productivity gains, and flatter organizational structures",
+        "Types of teams include problem-solving, cross-functional, virtual, R&D, and self-managed teams",
+        "Team effectiveness depends on the integration of training, communications, empowerment, and rewards",
+        "Teams require comprehensive training in task skills, teamwork, problem-solving, creativity, and interpersonal skills",
+        "Management must share information with teams for them to be effective",
+        "Teams need appropriate levels of authority - too little suggests lack of trust, too much can overwhelm developing teams",
+        "Reward systems should shift from individual-based to team-based to support collective performance"
+      ],
+      "totalPages": 31
+    },
+    {
+      "chapter": 11,
+      "title": "Managing Conflict and Negotiations",
+      "overview": "This chapter explores the nature of conflict in organizations, distinguishing between functional and dysfunctional conflict, and examines how managers can effectively manage conflict through various resolution approaches and negotiation strategies. The chapter emphasizes that conflict is neither inherently good nor bad but inevitable, and the critical issue is how it is managed.",
+      "keyTakeaways": [
+        "Conflict is neither inherently good nor bad, but inevitable in organizations",
+        "The critical issue is not whether conflict exists, but how it is managed",
+        "Functional conflict enhances organizational performance while dysfunctional conflict hinders it",
+        "Every organization has an optimal level of conflict for positive performance",
+        "Intergroup conflict develops through three stages: perceived, felt, and manifest",
+        "Main causes of conflict include work interdependence, goal differences, and perceptual differences",
+        "Five approaches to conflict resolution: dominating, accommodating, problem solving, avoiding, and compromising",
+        "Negotiations can be win-lose (distributive) or win-win (integrative)",
+        "Effective negotiations require understanding the context, issues, and desired outcomes",
+        "Cultural differences significantly impact negotiation strategies and tactics",
+        "Third-party interventions (mediation, arbitration, conciliation, consultation) can help resolve conflicts",
+        "Too little conflict can lead to stagnation, while too much can create chaos"
+      ],
+      "totalPages": 36
+    },
+    {
+      "chapter": 12,
+      "title": "Power, Politics, and Empowerment",
+      "overview": "Power is a pervasive part of the fabric of organizational life, used by both managers and non-managers. A person's success or failure in using or reacting to power is determined by understanding power, knowing how and when to use it, and being able to anticipate its probable effects. This chapter explores the concepts of power, influence, politics, and empowerment in organizational settings.",
+      "keyTakeaways": [
+        "Power is the capability to influence, while influence is power in action; both are essential in organizational settings",
+        "Power is relational and exists only between people or groups, not in isolation",
+        "Five interpersonal power bases exist: legitimate, reward, coercive (organizational); expert and referent (personal)",
+        "Structural power comes from resources, decision-making authority, and information control",
+        "Powerlessness affects different organizational levels differently, with specific symptoms and sources for first-line supervisors, staff professionals, and top managers",
+        "Empowerment enhances self-efficacy by removing conditions that foster powerlessness through a five-stage process",
+        "Subunit power is influenced by three strategic contingencies: coping with uncertainty, centrality, and substitutability",
+        "The illusion of power demonstrates that perceived power can be as influential as actual power",
+        "Political behavior is a fact of organizational life and can be used to resist authority, build power bases, defeat rivals, or bring about change",
+        "Nine influence tactics vary in effectiveness: inspiration and consultation lead to highest commitment; pressure and coalition tactics generate most resistance",
+        "Impression management is universal but creating false impressions damages credibility",
+        "Ethical use of power requires satisfying criteria of utilitarian outcomes, individual rights, distributive justice, and consideration of overwhelming factors",
+        "Effective power use requires recognizing multiple interests, assessing positions, understanding strategies, and building sufficient power to overcome opposition"
+      ],
+      "totalPages": 39
+    },
+    {
+      "chapter": 13,
+      "title": "Communication",
+      "overview": "Communication is the transmission of information and understanding through the use of common symbols from one person or group to another. This chapter explores the communication process, various communication flows within organizations, the impact of technology on communication, barriers to effective communication, and techniques for improving organizational communication.",
+      "keyTakeaways": [
+        "Communication is the transmission of information and understanding through common symbols from one person or group to another",
+        "The communication model includes seven key elements: communicator, encoding, message, medium, decoding, receiver, feedback, and noise",
+        "Nonverbal communication through body language, facial expressions, and gestures is as important as verbal communication",
+        "Organizations use four main communication flows: downward, upward, horizontal, and diagonal",
+        "Information richness varies by communication medium, with face-to-face communication being the richest",
+        "Technology has transformed organizational communication through email, instant messaging, videoconferencing, voice mail, smartphones, and electronic meetings",
+        "Multiple barriers can impede effective communication including frame of reference, selective listening, filtering, status differences, and communication overload",
+        "Improving communication requires both enhancing message quality and improving understanding of others' communications",
+        "Key improvement techniques include following up, utilizing feedback, empathy, repetition, building trust, effective timing, and simplifying language",
+        "Ethical communication requires avoiding deception, preventing harm, and treating all organization members justly",
+        "Multicultural communication must consider differences in words, space, time, and behavior across cultures"
+      ],
+      "totalPages": 26
+    },
+    {
+      "chapter": 3,
+      "title": "Individual Differences and Work Behavior",
+      "overview": "This chapter introduces the variables that influence individual behavior/performance by focusing on five major variables: demographic factors, abilities and skills, perception, attitudes, and personality. The discussion begins by explaining the importance of individual differences and how demographic factors, in combination with genetic factors, attitudes, personality, and locus of control influence work behavior and job satisfaction. The chapter concludes with a discussion of creativity and its value in the workplace.",
+      "sections": [
+        {
+          "title": "Why Individual Differences Are Important",
+          "level": 1,
+          "content": "Individual differences have a direct effect on behavior. Understanding these differences helps explain various workplace phenomena and behaviors.",
+          "subsections": [
+            {
+              "title": "Direct Effects on Behavior",
+              "level": 2,
+              "content": "Individual differences directly impact how people behave in organizational settings.",
+              "concepts": [
+                {
+                  "name": "Perception Differences",
+                  "definition": "People who perceive things differently behave differently",
+                  "examples": [
+                    "Different interpretations of workplace situations",
+                    "Varied responses to organizational change"
+                  ]
+                },
+                {
+                  "name": "Attitude Differences",
+                  "definition": "People with different attitudes respond differently to directives",
+                  "examples": [
+                    "Varying responses to management instructions",
+                    "Different levels of compliance"
+                  ]
+                },
+                {
+                  "name": "Personality Differences",
+                  "definition": "People with different personalities interact differently with bosses, coworkers, subordinates, and customers",
+                  "examples": [
+                    "Communication style variations",
+                    "Relationship-building approaches"
+                  ]
+                }
+              ],
+              "subsections": []
+            },
+            {
+              "title": "Explanatory Power of Individual Differences",
+              "level": 2,
+              "content": "Individual differences help explain various workplace behaviors and outcomes.",
+              "concepts": [
+                {
+                  "name": "Change Response",
+                  "definition": "Why some people embrace change and others are fearful of it",
+                  "examples": [
+                    "Early adopters versus resistors",
+                    "Innovation champions versus traditionalists"
+                  ]
+                },
+                {
+                  "name": "Supervision Needs",
+                  "definition": "Why some employees will be productive only if they are closely supervised, while others will be productive if they are not",
+                  "examples": [
+                    "Self-directed workers versus those requiring oversight",
+                    "Autonomous performers versus dependent workers"
+                  ]
+                },
+                {
+                  "name": "Learning Effectiveness",
+                  "definition": "Why some workers learn new tasks more effectively than others",
+                  "examples": [
+                    "Quick learners versus those requiring more time",
+                    "Different learning style preferences"
+                  ]
+                }
+              ],
+              "subsections": []
+            }
+          ]
+        }
+      ],
+      "keyTakeaways": [
+        "Individual differences (demographic factors, abilities and skills, perception, attitudes, and personality) have a direct effect on work behavior and performance",
+        "Diversity includes both primary (stable) dimensions like age, gender, and race, and secondary (changeable) dimensions like education and work experience",
+        "Key abilities include mental ability, emotional intelligence, and tacit knowledge, which differ from learned skills",
+        "Attitudes consist of three components: cognition (beliefs), affect (feelings), and behavior (intended actions)",
+        "Cognitive dissonance occurs when there is a discrepancy between attitudes and behaviors, creating mental anxiety",
+        "Job satisfaction is influenced by six key factors: pay, promotion opportunities, supervision, coworkers, working conditions, and job security",
+        "The relationship between satisfaction and performance can be viewed three ways: satisfaction causes performance, performance causes satisfaction, or rewards mediate the relationship",
+        "The Big Five personality dimensions are conscientiousness, extraversion, agreeableness, emotional stability, and openness to experience",
+        "Locus of control determines whether individuals believe they control their fate (internals) or are controlled by external forces (externals)",
+        "Self-efficacy reflects belief in one's competency and has three dimensions: magnitude, strength, and generality",
+        "Self-efficacy has implications for selection decisions, training programs, and goal setting",
+        "Creativity can be developed by encouraging new perspectives, making it safe to fail, providing diverse experiences, and role modeling innovative behavior"
+      ],
+      "totalPages": 28
+    },
+    {
+      "chapter": 4,
+      "title": "Perceptions, Attributions, and Emotions",
+      "overview": "Perception, attribution, and emotion are not concepts a manager can directly access or fix in others. Managers need an understanding of how these factors impact a person's view of the work environment.",
+      "keyTakeaways": [
+        "Perception is the cognitive process by which individuals select, organize, and give meaning to environmental stimuli through observation, selection, and translation",
+        "Perceptual grouping follows laws of nearness, similarity, closure, and figure-ground relationships",
+        "Common perceptual errors include stereotyping, selective attention, halo effect, similar-to-me errors, and biases from situational factors and personal needs",
+        "Attribution theory explains how people interpret events as caused by internal (personal) or external (situational) factors using distinctiveness, consistency, and consensus criteria",
+        "Impression management involves five tactics: ingratiation, self-promotion, exemplification, supplication, and intimidation",
+        "Universal primary emotions include fear, surprise, sadness, disgust, anger, joy, anticipation, and acceptance",
+        "Emotional expressions can be innate (universal) or learned (cultural), with gender and cultural variations in expression frequency",
+        "Emotional labor involves surface acting (regulating expressions) and deep acting (modifying feelings) and can lead to stress and burnout",
+        "Emotional intelligence combines self-awareness, self-control, empathy, and sensitivity to others' feelings, working with other factors like integrity, persistence, and passion for career success",
+        "Body language (kinesics) includes the chameleon effect where people unconsciously mimic others' postures and gestures"
+      ],
+      "totalPages": 31
+    },
+    {
+      "chapter": 5,
+      "title": "Motivation",
+      "overview": "This chapter explores motivation as the processes that account for an individual's intensity, direction, and persistence of effort toward attaining a goal. It examines both content theories (what motivates) and process theories (how motivation works), providing frameworks for understanding and enhancing employee motivation in organizational settings.",
+      "keyTakeaways": [
+        "Motivation consists of three key elements: intensity (how hard), direction (toward organizational goals), and persistence (how long)",
+        "Job performance is determined by capacity to perform, willingness to perform, and opportunity to perform",
+        "Managers must recognize individual diversity in motivation, as different people have different needs and goals",
+        "Content theories (Maslow, Alderfer, Herzberg, McClelland) focus on WHAT motivates people by identifying specific needs",
+        "Process theories (Vroom, Adams, Locke) focus on HOW motivation works through cognitive processes",
+        "Maslow's hierarchy progresses from physiological needs through safety, belongingness, esteem, to self-actualization",
+        "Alderfer's ERG theory includes both satisfaction-progression and frustration-regression processes",
+        "Herzberg distinguishes between hygiene factors (prevent dissatisfaction) and motivators (create satisfaction)",
+        "McClelland's learned needs include achievement (n Ach), affiliation (n Aff), and power (n Pow)",
+        "Expectancy theory links effort to performance, performance to rewards, and rewards to personal goals",
+        "Equity theory suggests people compare their input-outcome ratios with others and take action to restore perceived inequities",
+        "Organizational justice includes distributive justice (fairness of outcomes) and procedural justice (fairness of processes)",
+        "Goal-setting theory emphasizes that specific, challenging, accepted goals lead to higher performance",
+        "Effective goals should be SMARTER: Specific, Measurable, Attainable, Related, Timed, Extended, and Rewarded",
+        "Psychological contracts are unwritten agreements that may take precedence over formal contracts and significantly influence motivation"
+      ],
+      "totalPages": 35
+    },
+    {
+      "chapter": 7,
+      "title": "Evaluation, Feedback, and Rewards",
+      "overview": "This chapter examines how organizations evaluate employee performance, provide feedback, and administer rewards to influence behavior, motivation, and organizational outcomes. The chapter emphasizes the critical link between performance evaluation systems and reward systems for maximum effectiveness.",
+      "keyTakeaways": [
+        "Performance evaluation systems must be linked with reward systems to achieve maximum effectiveness",
+        "Performance evaluation serves both judgmental purposes (reward allocation, identifying high-potential employees) and developmental purposes (performance improvement, training identification)",
+        "360-degree feedback provides more comprehensive evaluation by gathering input from multiple sources including peers, supervisors, subordinates, and self-assessment",
+        "Reinforcement theory explains how consequences shape behavior through positive reinforcement, negative reinforcement, punishment, and extinction",
+        "Different reinforcement schedules (continuous, fixed interval, variable interval, fixed ratio, variable ratio) produce different behavioral patterns",
+        "Not all rewards are reinforcers - reinforcers specifically increase the rate of behavior",
+        "Intrinsic rewards are self-administered (achievement, autonomy, personal growth) while extrinsic rewards come from outside sources (salary, benefits, promotions)",
+        "Satisfaction with rewards depends on both the amount received and comparisons with others",
+        "Effective reward packages must be sufficient to satisfy basic needs, equitable, and individually oriented",
+        "Motivation alone cannot ensure good performance - ability, skill, and experience are also required",
+        "Innovative reward systems include skill-based pay, broadbanding, team-based rewards, gain-sharing, and employee stock ownership plans",
+        "Line of sight - the clear linkage between performance and rewards - is critical for reward effectiveness",
+        "Rewards significantly impact turnover, absenteeism, job performance, and organizational commitment",
+        "Feedback serves both instructional and motivational purposes in performance management",
+        "No research substantiates that extrinsic rewards have a negative effect on intrinsic motivation"
+      ],
+      "totalPages": 37
+    },
+    {
+      "chapter": 9,
+      "title": "Managing Individual Stress",
+      "overview": "This chapter examines stress in organizational settings, exploring its definition, sources, consequences, and management strategies. It covers the organizational stress model, individual differences that moderate stress responses, and both organizational and individual approaches to stress prevention and management.",
+      "keyTakeaways": [
+        "Stress is an adaptive response to situations that place special demands on individuals, moderated by individual differences",
+        "Stressors originate from individual, group, organizational, and non-work sources",
+        "The organizational stress model includes stressors, cognitive appraisal, coping strategies, moderators, and outcomes",
+        "Stress produces psychological, behavioral, cognitive, and physiological consequences affecting both individuals and organizations",
+        "Key moderators of stress include personality (including Type A/B patterns and hardiness), social support, age, gender, and heredity",
+        "Burnout is a serious consequence of chronic work stress characterized by emotional exhaustion, depersonalization, and decreased accomplishment",
+        "Stress costs organizations approximately $250 billion annually through various negative outcomes",
+        "Prevention focuses on eliminating stressors while management helps people cope with existing stress",
+        "Effective organizational approaches include EAPs, wellness programs, work redesign, and maximizing person-environment fit",
+        "Individual coping strategies include problem-focused and emotion-focused approaches, with various techniques like relaxation, meditation, and cognitive restructuring",
+        "The underload-overload continuum shows optimal performance occurs at moderate stress levels",
+        "Social support is an effective stress moderator providing predictability, purpose, and hope in stressful situations"
+      ],
+      "totalPages": 54
+    }
+  ]
+}
