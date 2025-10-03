@@ -9,6 +9,8 @@ class MindMap {
         this.network = null;
         this.nodes = null;
         this.edges = null;
+        this.expandedNodes = new Set(['root']); // Track which nodes are expanded
+        this.allItems = []; // Store all content items
     }
 
     /**
@@ -23,10 +25,10 @@ class MindMap {
 
         try {
             // Get flattened content
-            const items = courseData.getFlattenedContent();
+            this.allItems = courseData.getFlattenedContent();
 
-            // Create nodes and edges
-            this.createNodesAndEdges(items);
+            // Create nodes and edges (initially showing only root + parts)
+            this.createNodesAndEdges();
 
             // Configure network options
             const options = this.getNetworkOptions();
@@ -58,28 +60,45 @@ class MindMap {
 
     /**
      * Create nodes and edges from content items
-     * @param {Array} items - Flattened content items
+     * Only shows nodes whose parents are expanded
      */
-    createNodesAndEdges(items) {
+    createNodesAndEdges() {
         const nodesArray = [];
         const edgesArray = [];
 
-        items.forEach(item => {
+        // Get visible items (root + children of expanded nodes)
+        const visibleItems = this.allItems.filter(item => {
+            if (item.id === 'root') return true;
+            return this.expandedNodes.has(item.parent);
+        });
+
+        visibleItems.forEach(item => {
+            // Check if this node has children
+            const hasChildren = this.allItems.some(child => child.parent === item.id);
+            const isExpanded = this.expandedNodes.has(item.id);
+
+            // Add expand/collapse indicator to label
+            let label = item.label;
+            if (hasChildren) {
+                label = isExpanded ? `▼ ${label}` : `▶ ${label}`;
+            }
+
             // Create node
             const node = {
                 id: item.id,
-                label: item.label,
+                label: label,
                 level: item.level,
                 color: this.getNodeColor(item),
                 font: this.getNodeFont(item),
                 shape: this.getNodeShape(item),
-                size: this.getNodeSize(item)
+                size: this.getNodeSize(item),
+                data: item // Store original item data
             };
 
             nodesArray.push(node);
 
             // Create edge to parent
-            if (item.parent) {
+            if (item.parent && visibleItems.some(v => v.id === item.parent)) {
                 const edge = {
                     from: item.parent,
                     to: item.id,
@@ -98,8 +117,15 @@ class MindMap {
             }
         });
 
-        this.nodes = new vis.DataSet(nodesArray);
-        this.edges = new vis.DataSet(edgesArray);
+        if (this.nodes) {
+            this.nodes.clear();
+            this.nodes.add(nodesArray);
+            this.edges.clear();
+            this.edges.add(edgesArray);
+        } else {
+            this.nodes = new vis.DataSet(nodesArray);
+            this.edges = new vis.DataSet(edgesArray);
+        }
     }
 
     /**
@@ -155,10 +181,10 @@ class MindMap {
      */
     getNodeFont(item) {
         const fontSizes = {
-            root: 24,
-            part: 18,
-            chapter: 14,
-            takeaway: 11
+            root: 32,
+            part: 24,
+            chapter: 18,
+            takeaway: 14
         };
 
         const fontWeights = {
@@ -169,7 +195,7 @@ class MindMap {
         };
 
         return {
-            size: fontSizes[item.type] || 12,
+            size: fontSizes[item.type] || 14,
             color: item.type === 'root' || item.type === 'part' ? '#ffffff' : '#e8eaed',
             face: 'Inter, sans-serif',
             bold: fontWeights[item.type]
@@ -199,13 +225,13 @@ class MindMap {
      */
     getNodeSize(item) {
         const sizes = {
-            root: 40,
-            part: 30,
-            chapter: 20,
-            takeaway: 15
+            root: 50,
+            part: 40,
+            chapter: 30,
+            takeaway: 20
         };
 
-        return sizes[item.type] || 15;
+        return sizes[item.type] || 20;
     }
 
     /**
@@ -234,9 +260,9 @@ class MindMap {
                     enabled: true,
                     direction: 'UD',
                     sortMethod: 'directed',
-                    levelSeparation: 150,
-                    nodeSpacing: 120,
-                    treeSpacing: 200,
+                    levelSeparation: 200,
+                    nodeSpacing: 200,
+                    treeSpacing: 300,
                     blockShifting: true,
                     edgeMinimization: true,
                     parentCentralization: true
@@ -341,6 +367,18 @@ class MindMap {
     onNodeClick(node) {
         console.log('Node clicked:', node);
 
+        // Check if this node has children
+        const hasChildren = this.allItems.some(item => item.parent === node.id);
+
+        if (hasChildren) {
+            // Toggle expansion
+            if (this.expandedNodes.has(node.id)) {
+                this.collapseNode(node.id);
+            } else {
+                this.expandNode(node.id);
+            }
+        }
+
         // Dispatch custom event for other modules to handle
         const event = new CustomEvent('mindmap:nodeClick', {
             detail: { node }
@@ -351,6 +389,51 @@ class MindMap {
         if (node.data && node.data.chapter) {
             this.loadChapterContent(node.data);
         }
+    }
+
+    /**
+     * Expand a node to show its children
+     * @param {string} nodeId - Node ID to expand
+     */
+    expandNode(nodeId) {
+        this.expandedNodes.add(nodeId);
+        this.createNodesAndEdges();
+
+        // Smooth animation after expansion
+        setTimeout(() => {
+            this.network.fit({
+                animation: {
+                    duration: 500,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+        }, 100);
+    }
+
+    /**
+     * Collapse a node to hide its children
+     * @param {string} nodeId - Node ID to collapse
+     */
+    collapseNode(nodeId) {
+        // Remove this node and all its descendants from expanded set
+        const removeDescendants = (id) => {
+            this.expandedNodes.delete(id);
+            const children = this.allItems.filter(item => item.parent === id);
+            children.forEach(child => removeDescendants(child.id));
+        };
+
+        removeDescendants(nodeId);
+        this.createNodesAndEdges();
+
+        // Smooth animation after collapse
+        setTimeout(() => {
+            this.network.fit({
+                animation: {
+                    duration: 500,
+                    easingFunction: 'easeInOutQuad'
+                }
+            });
+        }, 100);
     }
 
     /**
