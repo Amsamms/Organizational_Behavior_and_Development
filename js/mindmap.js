@@ -1,6 +1,6 @@
 /**
- * Clean Hierarchical Mind Map
- * Simple tree layout with intuitive interactions
+ * Simple Vertical Mind Map
+ * Clean, intuitive tree layout
  */
 
 class MindMap {
@@ -8,19 +8,18 @@ class MindMap {
         this.container = document.getElementById(containerId);
         this.svg = null;
         this.g = null;
-        this.tree = null;
-        this.root = null;
         this.allItems = [];
+        this.expandedNodes = new Set(['root']);
 
         this.width = 0;
         this.height = 0;
         this.zoom = null;
 
-        // Node dimensions
-        this.nodeWidth = 200;
-        this.nodeHeight = 60;
-        this.horizontalSpacing = 250;
-        this.verticalSpacing = 120;
+        // Layout settings
+        this.nodeWidth = 280;
+        this.nodeHeight = 70;
+        this.levelHeight = 150;
+        this.siblingSpacing = 20;
 
         // Colors
         this.colors = {
@@ -28,7 +27,7 @@ class MindMap {
             'Part 2': '#2ecc71',
             'Part 3': '#e67e22',
             'Part 4': '#9b59b6',
-            'root': '#1a1f2e'
+            'root': '#2c3e50'
         };
     }
 
@@ -42,7 +41,6 @@ class MindMap {
             this.allItems = courseData.getFlattenedContent();
             this.updateDimensions();
             this.createSVG();
-            this.buildTree();
             this.render();
 
             window.addEventListener('resize', () => this.handleResize());
@@ -68,7 +66,7 @@ class MindMap {
             .attr('height', '100%')
             .style('background', 'radial-gradient(circle at center, #1a1f2e 0%, #0f1419 100%)');
 
-        // Zoom behavior
+        // Zoom and pan
         this.zoom = d3.zoom()
             .scaleExtent([0.3, 2])
             .on('zoom', (event) => {
@@ -79,69 +77,84 @@ class MindMap {
 
         // Main group
         this.g = this.svg.append('g');
-
-        // Add arrow marker for links
-        const defs = this.svg.append('defs');
-        defs.append('marker')
-            .attr('id', 'arrow')
-            .attr('viewBox', '0 -5 10 10')
-            .attr('refX', 8)
-            .attr('refY', 0)
-            .attr('markerWidth', 6)
-            .attr('markerHeight', 6)
-            .attr('orient', 'auto')
-            .append('path')
-            .attr('d', 'M0,-5L10,0L0,5')
-            .attr('fill', '#4a5568');
-    }
-
-    buildTree() {
-        // Convert flat items to hierarchy
-        const hierarchyData = this.buildHierarchy(this.allItems);
-
-        // Create D3 hierarchy
-        this.root = d3.hierarchy(hierarchyData);
-
-        // Create tree layout
-        this.tree = d3.tree()
-            .nodeSize([this.horizontalSpacing, this.verticalSpacing])
-            .separation((a, b) => {
-                return a.parent === b.parent ? 1 : 1.2;
-            });
-
-        this.tree(this.root);
-    }
-
-    buildHierarchy(items) {
-        const root = items.find(item => item.id === 'root');
-
-        const buildChildren = (parentId) => {
-            return items
-                .filter(item => item.parent === parentId)
-                .map(item => ({
-                    ...item,
-                    children: buildChildren(item.id)
-                }));
-        };
-
-        return {
-            ...root,
-            children: buildChildren('root')
-        };
     }
 
     render() {
-        // Get nodes and links
-        const nodes = this.root.descendants();
-        const links = this.root.links();
+        // Get visible nodes
+        const visibleNodes = this.getVisibleNodes();
 
-        // Center the tree
-        const centerX = this.width / 2;
-        const centerY = 80;
+        // Calculate positions
+        const positioned = this.calculatePositions(visibleNodes);
 
-        // Render links
+        // Render links first
+        this.renderLinks(positioned);
+
+        // Then render nodes
+        this.renderNodes(positioned);
+
+        // Center view
+        this.centerView(positioned);
+    }
+
+    getVisibleNodes() {
+        return this.allItems.filter(item => {
+            if (item.id === 'root') return true;
+            return this.expandedNodes.has(item.parent);
+        });
+    }
+
+    calculatePositions(nodes) {
+        const positioned = [];
+        const levels = {};
+
+        // Group by level
+        nodes.forEach(node => {
+            if (!levels[node.level]) {
+                levels[node.level] = [];
+            }
+            levels[node.level].push(node);
+        });
+
+        // Position each level
+        let currentY = 50;
+
+        Object.keys(levels).sort((a, b) => a - b).forEach(levelKey => {
+            const levelNodes = levels[levelKey];
+            const levelWidth = (this.nodeWidth + this.siblingSpacing) * levelNodes.length - this.siblingSpacing;
+            let currentX = -levelWidth / 2;
+
+            levelNodes.forEach(node => {
+                positioned.push({
+                    ...node,
+                    x: currentX + this.nodeWidth / 2,
+                    y: currentY,
+                    hasChildren: this.allItems.some(item => item.parent === node.id),
+                    isExpanded: this.expandedNodes.has(node.id)
+                });
+
+                currentX += this.nodeWidth + this.siblingSpacing;
+            });
+
+            currentY += this.levelHeight;
+        });
+
+        return positioned;
+    }
+
+    renderLinks(nodes) {
+        const links = [];
+
+        nodes.forEach(node => {
+            if (node.parent) {
+                const parent = nodes.find(n => n.id === node.parent);
+                if (parent) {
+                    links.push({ source: parent, target: node });
+                }
+            }
+        });
+
         const link = this.g.selectAll('.link')
-            .data(links, d => d.target.data.id);
+            .data(links, d => `${d.source.id}-${d.target.id}`);
 
         link.exit().remove();
 
@@ -149,140 +162,143 @@ class MindMap {
             .append('path')
             .attr('class', 'link')
             .attr('fill', 'none')
-            .attr('stroke', d => this.getColor(d.target.data))
-            .attr('stroke-width', 2)
-            .attr('stroke-opacity', 0.3);
+            .attr('stroke', d => this.getNodeColor(d.target))
+            .attr('stroke-width', 3)
+            .attr('stroke-opacity', 0.4);
 
         linkEnter.merge(link)
             .attr('d', d => {
-                const sourceX = d.source.x + centerX;
-                const sourceY = d.source.y + centerY + this.nodeHeight / 2;
-                const targetX = d.target.x + centerX;
-                const targetY = d.target.y + centerY - this.nodeHeight / 2;
+                const sx = d.source.x;
+                const sy = d.source.y + this.nodeHeight / 2;
+                const tx = d.target.x;
+                const ty = d.target.y - this.nodeHeight / 2;
 
-                return `M ${sourceX},${sourceY}
-                        C ${sourceX},${(sourceY + targetY) / 2}
-                          ${targetX},${(sourceY + targetY) / 2}
-                          ${targetX},${targetY}`;
+                const midY = (sy + ty) / 2;
+
+                return `M ${sx},${sy}
+                        C ${sx},${midY} ${tx},${midY} ${tx},${ty}`;
             });
+    }
 
-        // Render nodes
+    renderNodes(nodes) {
         const node = this.g.selectAll('.node')
-            .data(nodes, d => d.data.id);
+            .data(nodes, d => d.id);
 
         node.exit().remove();
 
         const nodeEnter = node.enter()
             .append('g')
             .attr('class', 'node')
-            .attr('transform', d => `translate(${d.x + centerX},${d.y + centerY})`)
             .style('cursor', 'pointer')
             .on('click', (event, d) => this.handleNodeClick(event, d));
 
-        // Add node rectangle
+        // Node background
         nodeEnter.append('rect')
-            .attr('class', 'node-rect')
-            .attr('x', -this.nodeWidth / 2)
-            .attr('y', -this.nodeHeight / 2)
+            .attr('class', 'node-bg')
             .attr('width', this.nodeWidth)
             .attr('height', this.nodeHeight)
-            .attr('rx', 8)
-            .attr('fill', d => this.getColor(d.data))
-            .attr('stroke', d => this.lightenColor(this.getColor(d.data)))
+            .attr('rx', 12)
+            .attr('fill', d => this.getNodeColor(d))
+            .attr('stroke', d => this.lightenColor(this.getNodeColor(d)))
             .attr('stroke-width', 2)
-            .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))')
+            .style('filter', 'drop-shadow(0 6px 12px rgba(0,0,0,0.4))')
             .on('mouseover', function() {
                 d3.select(this)
                     .transition()
                     .duration(200)
                     .attr('stroke-width', 3)
-                    .style('filter', 'drop-shadow(0 6px 12px rgba(0,0,0,0.5))');
+                    .style('filter', 'drop-shadow(0 8px 16px rgba(0,0,0,0.6))');
             })
             .on('mouseout', function() {
                 d3.select(this)
                     .transition()
                     .duration(200)
                     .attr('stroke-width', 2)
-                    .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))');
+                    .style('filter', 'drop-shadow(0 6px 12px rgba(0,0,0,0.4))');
             });
 
-        // Add text label
+        // Node text
         nodeEnter.append('text')
-            .attr('class', 'node-label')
+            .attr('class', 'node-text')
+            .attr('x', this.nodeWidth / 2)
+            .attr('y', this.nodeHeight / 2)
             .attr('text-anchor', 'middle')
             .attr('dy', '0.35em')
             .style('fill', '#ffffff')
             .style('font-size', d => {
-                if (d.data.type === 'root') return '16px';
-                if (d.data.type === 'part') return '14px';
-                return '12px';
+                if (d.type === 'root') return '18px';
+                if (d.type === 'part') return '16px';
+                return '14px';
             })
-            .style('font-weight', d => d.data.type === 'root' || d.data.type === 'part' ? '600' : '500')
+            .style('font-weight', d => d.type === 'root' || d.type === 'part' ? '700' : '600')
             .style('pointer-events', 'none')
-            .text(d => this.truncateText(d.data.label, d.data.type));
+            .text(d => this.truncateText(d.label));
 
-        // Add expand/collapse indicator
-        nodeEnter.filter(d => d.children || d._children)
-            .append('circle')
-            .attr('class', 'expand-indicator')
-            .attr('cx', this.nodeWidth / 2 - 15)
-            .attr('cy', 0)
-            .attr('r', 10)
+        // Expand/collapse button
+        const btnGroup = nodeEnter.filter(d => d.hasChildren)
+            .append('g')
+            .attr('class', 'expand-btn');
+
+        btnGroup.append('circle')
+            .attr('cx', this.nodeWidth / 2)
+            .attr('cy', this.nodeHeight + 15)
+            .attr('r', 14)
             .attr('fill', '#ffffff')
-            .attr('stroke', d => this.getColor(d.data))
+            .attr('stroke', d => this.getNodeColor(d))
             .attr('stroke-width', 2);
 
-        nodeEnter.filter(d => d.children || d._children)
-            .append('text')
-            .attr('class', 'expand-icon')
-            .attr('x', this.nodeWidth / 2 - 15)
-            .attr('y', 0)
+        btnGroup.append('text')
+            .attr('x', this.nodeWidth / 2)
+            .attr('y', this.nodeHeight + 15)
             .attr('text-anchor', 'middle')
             .attr('dy', '0.35em')
-            .style('fill', d => this.getColor(d.data))
-            .style('font-size', '12px')
+            .style('fill', d => this.getNodeColor(d))
+            .style('font-size', '16px')
             .style('font-weight', 'bold')
             .style('pointer-events', 'none')
-            .text(d => d.children ? '−' : '+');
+            .text(d => d.isExpanded ? '−' : '+');
 
-        // Update existing nodes
-        node.merge(nodeEnter)
+        // Update positions
+        nodeEnter.merge(node)
             .transition()
             .duration(500)
-            .attr('transform', d => `translate(${d.x + centerX},${d.y + centerY})`);
-
-        // Initial zoom to fit
-        setTimeout(() => {
-            this.fitToScreen();
-        }, 100);
+            .attr('transform', d => `translate(${d.x - this.nodeWidth / 2}, ${d.y - this.nodeHeight / 2})`);
     }
 
-    handleNodeClick(event, d) {
+    handleNodeClick(event, node) {
         event.stopPropagation();
 
-        if (d.children) {
-            d._children = d.children;
-            d.children = null;
-        } else if (d._children) {
-            d.children = d._children;
-            d._children = null;
+        if (node.hasChildren) {
+            if (this.expandedNodes.has(node.id)) {
+                this.collapseNode(node.id);
+            } else {
+                this.expandedNodes.add(node.id);
+            }
+            this.render();
         }
 
-        this.tree(this.root);
-        this.render();
-
-        // Dispatch event for content loading
-        if (d.data.chapter) {
+        // Load content
+        if (node.chapter) {
             const customEvent = new CustomEvent('content:loadChapter', {
-                detail: { chapter: d.data }
+                detail: { chapter: node }
             });
             document.dispatchEvent(customEvent);
         }
     }
 
-    getColor(data) {
-        // Find parent part
-        let current = data;
+    collapseNode(nodeId) {
+        const removeDescendants = (id) => {
+            this.expandedNodes.delete(id);
+            const children = this.allItems.filter(item => item.parent === id);
+            children.forEach(child => removeDescendants(child.id));
+        };
+
+        removeDescendants(nodeId);
+    }
+
+    getNodeColor(node) {
+        // Find the parent part
+        let current = node;
         while (current && current.type !== 'part' && current.type !== 'root') {
             const parent = this.allItems.find(item => item.id === current.parent);
             if (!parent) break;
@@ -293,12 +309,16 @@ class MindMap {
             return this.colors[current.label] || '#3498db';
         }
 
-        return data.color || '#3498db';
+        if (current.type === 'root') {
+            return this.colors.root;
+        }
+
+        return node.color || '#3498db';
     }
 
     lightenColor(color) {
         const rgb = this.hexToRgb(color);
-        return `rgb(${Math.min(255, rgb.r + 40)}, ${Math.min(255, rgb.g + 40)}, ${Math.min(255, rgb.b + 40)})`;
+        return `rgb(${Math.min(255, rgb.r + 50)}, ${Math.min(255, rgb.g + 50)}, ${Math.min(255, rgb.b + 50)})`;
     }
 
     hexToRgb(hex) {
@@ -310,10 +330,46 @@ class MindMap {
         } : { r: 52, g: 152, b: 219 };
     }
 
-    truncateText(text, type) {
-        const maxLength = type === 'root' ? 20 : type === 'part' ? 18 : 22;
+    truncateText(text) {
+        const maxLength = 30;
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength - 2) + '..';
+    }
+
+    centerView(nodes) {
+        if (nodes.length === 0) return;
+
+        setTimeout(() => {
+            const xs = nodes.map(n => n.x);
+            const ys = nodes.map(n => n.y);
+
+            const minX = Math.min(...xs) - this.nodeWidth / 2;
+            const maxX = Math.max(...xs) + this.nodeWidth / 2;
+            const minY = Math.min(...ys) - this.nodeHeight / 2;
+            const maxY = Math.max(...ys) + this.nodeHeight / 2 + 30;
+
+            const contentWidth = maxX - minX;
+            const contentHeight = maxY - minY;
+
+            const scale = Math.min(
+                (this.width * 0.9) / contentWidth,
+                (this.height * 0.9) / contentHeight,
+                1.5
+            );
+
+            const centerX = (minX + maxX) / 2;
+            const centerY = (minY + maxY) / 2;
+
+            const translateX = this.width / 2 - centerX * scale;
+            const translateY = this.height / 2 - centerY * scale;
+
+            this.svg.transition()
+                .duration(750)
+                .call(
+                    this.zoom.transform,
+                    d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                );
+        }, 100);
     }
 
     // Controls
@@ -330,30 +386,9 @@ class MindMap {
     }
 
     resetZoom() {
-        this.fitToScreen();
-    }
-
-    fitToScreen() {
-        const bounds = this.g.node().getBBox();
-        const fullWidth = bounds.width;
-        const fullHeight = bounds.height;
-        const midX = bounds.x + fullWidth / 2;
-        const midY = bounds.y + fullHeight / 2;
-
-        if (fullWidth === 0 || fullHeight === 0) return;
-
-        const scale = 0.9 / Math.max(fullWidth / this.width, fullHeight / this.height);
-        const translate = [
-            this.width / 2 - scale * midX,
-            this.height / 2 - scale * midY
-        ];
-
-        this.svg.transition()
-            .duration(750)
-            .call(
-                this.zoom.transform,
-                d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
-            );
+        const nodes = this.getVisibleNodes();
+        const positioned = this.calculatePositions(nodes);
+        this.centerView(positioned);
     }
 
     async exportAsImage() {
@@ -390,7 +425,6 @@ class MindMap {
 
     handleResize() {
         this.updateDimensions();
-        this.svg.attr('viewBox', [0, 0, this.width, this.height]);
         this.render();
     }
 }
