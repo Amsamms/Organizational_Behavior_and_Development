@@ -4,173 +4,185 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Interactive Mind Map for EMBA Organizational Behavior and Development Course - Alexandria University">
-    <meta name="author" content="Dr. Ghada Adel Atteya">
-    <title>Organizational Behavior & Development | EMBA Alexandria University</title>
+    <title>OB Mind Map | EMBA Alexandria</title>
 
     <!-- D3.js for Mind Map -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
-    <!-- Font Awesome for Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Custom Styles -->
+    <!-- Styles -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
     <!-- Header -->
-    <header class="main-header">
-        <div class="header-container">
-            <div class="logo-section">
+    <header class="header">
+        <div class="header-content">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <div class="logo">
                 <i class="fas fa-brain"></i>
-                <div class="title-section">
-                    <h1>Organizational Behavior & Development</h1>
-                    <p class="subtitle">EMBA - Alexandria University - Dr. Ghada Adel Atteya</p>
-                </div>
+                <span>OB Mind Map</span>
             </div>
 
-            <!-- Search Bar -->
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search concepts, theories, chapters...">
-                <button id="clearSearch" class="clear-btn"><i class="fas fa-times"></i></button>
-            </div>
-
-            <!-- View Toggle -->
-            <div class="view-toggle">
-                <button id="toggleMindMap" class="view-btn active" title="Mind Map View">
-                    <i class="fas fa-project-diagram"></i>
+            <div class="header-actions">
+                <button class="icon-btn" id="searchToggle" aria-label="Search">
+                    <i class="fas fa-search"></i>
                 </button>
-                <button id="toggleContent" class="view-btn" title="Content View">
-                    <i class="fas fa-book-open"></i>
-                </button>
-                <button id="toggleBoth" class="view-btn" title="Split View">
+                <button class="icon-btn" id="viewToggle" aria-label="Toggle view">
                     <i class="fas fa-columns"></i>
                 </button>
             </div>
         </div>
+
+        <!-- Search Bar (Hidden by default) -->
+        <div class="search-bar" id="searchBar">
+            <input type="text" id="searchInput" placeholder="Search topics, theories...">
+            <button class="icon-btn" id="closeSearch">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-        <!-- Mind Map Panel -->
-        <div id="mindMapPanel" class="panel mindmap-panel active">
-            <div class="panel-header">
-                <h2><i class="fas fa-project-diagram"></i> Interactive Course Mind Map</h2>
-                <div class="map-controls">
-                    <button id="resetZoom" class="control-btn" title="Reset Zoom"><i class="fas fa-expand"></i></button>
-                    <button id="zoomIn" class="control-btn" title="Zoom In"><i class="fas fa-plus"></i></button>
-                    <button id="zoomOut" class="control-btn" title="Zoom Out"><i class="fas fa-minus"></i></button>
-                    <button id="exportMap" class="control-btn" title="Export as Image"><i class="fas fa-download"></i></button>
-                </div>
-            </div>
-            <div id="mindMap" class="mind-map-container"></div>
-            <div class="map-legend">
-                <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span>Part 1: OB Field</div>
-                <div class="legend-item"><span class="legend-color" style="background: #2ecc71;"></span>Part 2: Individual Behavior</div>
-                <div class="legend-item"><span class="legend-color" style="background: #e67e22;"></span>Part 3: Group Behavior</div>
-                <div class="legend-item"><span class="legend-color" style="background: #9b59b6;"></span>Part 4: Organizational Processes</div>
-            </div>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Course Map</h2>
+            <button class="icon-btn" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
 
-        <!-- Navigation Panel -->
-        <aside id="navigationPanel" class="panel navigation-panel">
-            <div class="panel-header">
-                <h2><i class="fas fa-list-ul"></i> Course Navigation</h2>
-                <button id="collapseAll" class="control-btn">Collapse All</button>
-                <button id="expandAll" class="control-btn">Expand All</button>
-            </div>
-            <nav id="courseNav" class="course-navigation">
-                <!-- Navigation will be populated by JavaScript -->
+        <div class="sidebar-content">
+            <nav class="nav-tree" id="navTree">
+                <!-- Populated by JavaScript -->
             </nav>
-        </aside>
+        </div>
 
-        <!-- Content Panel -->
-        <article id="contentPanel" class="panel content-panel">
-            <div class="panel-header">
-                <h2 id="contentTitle"><i class="fas fa-book"></i> Content View</h2>
-                <div class="content-controls">
-                    <button id="bookmarkBtn" class="control-btn" title="Bookmark"><i class="far fa-bookmark"></i></button>
-                    <button id="printBtn" class="control-btn" title="Print"><i class="fas fa-print"></i></button>
-                    <button id="shareBtn" class="control-btn" title="Share"><i class="fas fa-share-alt"></i></button>
+        <div class="sidebar-footer">
+            <p>Dr. Ghada Adel Atteya</p>
+            <small>EMBA - Alexandria University</small>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Mind Map View -->
+        <section class="mindmap-section" id="mindmapSection">
+            <div class="mindmap-header">
+                <div class="mindmap-title">
+                    <h1>Organizational Behavior</h1>
+                    <p>Interactive Course Mind Map</p>
+                </div>
+
+                <div class="mindmap-controls">
+                    <div class="control-group">
+                        <button class="control-btn" id="resetZoom" title="Fit to screen">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                        <button class="control-btn" id="zoomIn" title="Zoom in">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="control-btn" id="zoomOut" title="Zoom out">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                    <button class="control-btn" id="exportMap" title="Export">
+                        <i class="fas fa-download"></i>
+                    </button>
                 </div>
             </div>
-            <div id="contentArea" class="content-area">
-                <!-- Welcome Screen -->
-                <div class="welcome-screen">
-                    <i class="fas fa-graduation-cap welcome-icon"></i>
-                    <h1>Welcome to Organizational Behavior & Development</h1>
-                    <p class="welcome-subtitle">EMBA Course - Alexandria University</p>
-                    <p class="welcome-text">
-                        This interactive platform provides a comprehensive visual mind map of the entire course.
-                        Explore chapters, concepts, theories, and real-world applications through an intuitive interface.
-                    </p>
-                    <div class="course-stats">
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalChapters">9</div>
-                            <div class="stat-label">Chapters</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number">4</div>
-                            <div class="stat-label">Course Parts</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalConcepts">100+</div>
-                            <div class="stat-label">Key Concepts</div>
-                        </div>
-                    </div>
-                    <div class="quick-start">
-                        <h3>Quick Start Guide</h3>
-                        <ul class="quick-start-list">
-                            <li><i class="fas fa-project-diagram"></i> Use the <strong>Mind Map</strong> to visualize course structure</li>
-                            <li><i class="fas fa-list-ul"></i> Browse through <strong>Navigation</strong> for detailed content</li>
-                            <li><i class="fas fa-search"></i> <strong>Search</strong> for specific topics, theories, or concepts</li>
-                            <li><i class="fas fa-bookmark"></i> <strong>Bookmark</strong> important sections for quick access</li>
-                        </ul>
-                    </div>
+
+            <div class="mindmap-container" id="mindMap"></div>
+
+            <!-- Mind Map Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="legend-dot" style="background: #3498db;"></span>
+                    <span>OB Field</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background: #2ecc71;"></span>
+                    <span>Individual</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background: #e67e22;"></span>
+                    <span>Group</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background: #9b59b6;"></span>
+                    <span>Organization</span>
                 </div>
             </div>
-        </article>
+
+            <!-- Quick Guide (shows on first visit) -->
+            <div class="quick-guide" id="quickGuide">
+                <button class="close-guide" id="closeGuide">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3>Quick Guide</h3>
+                <ul>
+                    <li><i class="fas fa-hand-pointer"></i> Click nodes to expand</li>
+                    <li><i class="fas fa-arrows-alt"></i> Drag nodes to move</li>
+                    <li><i class="fas fa-search-plus"></i> Scroll to zoom</li>
+                    <li><i class="fas fa-bars"></i> Menu for navigation</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Content Panel (Hidden by default) -->
+        <section class="content-panel" id="contentPanel">
+            <div class="content-header">
+                <button class="icon-btn back-btn" id="backToMap">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 id="contentTitle">Content</h2>
+                <div class="content-actions">
+                    <button class="icon-btn" id="bookmarkBtn">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                    <button class="icon-btn" id="shareBtn">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="content-body" id="contentBody">
+                <!-- Content loaded dynamically -->
+            </div>
+        </section>
     </main>
 
-    <!-- Search Results Overlay -->
-    <div id="searchResults" class="search-results-overlay hidden">
-        <div class="search-results-container">
-            <div class="search-results-header">
+    <!-- Search Results Modal -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h3>Search Results</h3>
-                <button id="closeSearch" class="close-btn"><i class="fas fa-times"></i></button>
+                <button class="icon-btn" id="closeSearchModal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div id="searchResultsList" class="search-results-list">
+            <div class="modal-body" id="searchResults">
                 <!-- Results populated by JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- Bookmarks Sidebar -->
-    <aside id="bookmarksSidebar" class="bookmarks-sidebar hidden">
-        <div class="sidebar-header">
-            <h3><i class="fas fa-bookmark"></i> Bookmarks</h3>
-            <button id="closeBookmarks" class="close-btn"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="bookmarksList" class="bookmarks-list">
-            <p class="empty-message">No bookmarks yet. Click the bookmark icon to save sections.</p>
-        </div>
-    </aside>
+    <!-- Loading Spinner -->
+    <div class="spinner" id="spinner">
+        <div class="spinner-circle"></div>
+    </div>
 
-    <!-- Footer -->
-    <footer class="main-footer">
-        <div class="footer-content">
-            <p>&copy; 2025 Alexandria University - EMBA Program | Organizational Behavior and Development</p>
-            <p>Instructor: Dr. Ghada Adel Atteya | October 2025</p>
-        </div>
-    </footer>
-
-    <!-- JavaScript Files -->
+    <!-- Scripts -->
     <script src="js/content-data.js"></script>
     <script src="js/mindmap.js"></script>
     <script src="js/navigation.js"></script>
